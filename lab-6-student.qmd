@@ -127,6 +127,36 @@ print(lowest_income_region)
 ```{r}
 #| label: recreate-plot
 
+Q6_childcare <- Q3_childcare %>%
+  select(study_year, region, mc_infant, mc_toddler, mc_preschool) %>%
+  pivot_longer(cols = starts_with("mc_"),
+               names_to = "age_group",
+               values_to = "weekly_price") %>%
+  mutate(age_group = case_when(
+    age_group == "mc_infant" ~ "Infant",
+    age_group == "mc_toddler" ~ "Toddler",
+    age_group == "mc_preschool" ~ "Preschool"
+  ))
+
+ggplot(Q6_childcare, aes(x = study_year, y = weekly_price, color = region)) +
+  geom_point(alpha = 0.5, size = 1) +
+  geom_smooth(method = "loess", se = TRUE) +
+  facet_wrap(~age_group, scales = "free_y") +
+  labs(
+    title = "Weekly Median Price for Center-Based Childcare ($)",
+    x = "Study Year",
+    y = "Weekly Price",
+    color = "California Region"
+  ) +
+  scale_x_continuous(breaks = seq(2008, 2018, 2)) +
+  theme_gray(base_size = 12) +
+  theme(
+    legend.position = "right",
+    strip.text = element_text(face = "bold"),
+    panel.grid.minor = element_blank(),
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)
+  )
+  
 ```
 
 
