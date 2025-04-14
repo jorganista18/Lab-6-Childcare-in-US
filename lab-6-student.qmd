@@ -10,6 +10,9 @@ The data come to us from [TidyTuesday](https://github.com/rfordatascience/tidytu
 ```{r}
 #| label: setup
 library(tidyverse)
+library(dplyr)
+library(readr)
+library(forcats)
 ```
 
 ```{r}
@@ -22,21 +25,33 @@ counties <- read_csv('https://raw.githubusercontent.com/rfordatascience/tidytues
 
 **1. Briefly describe the dataset (~ 4 sentences). What information does it contain?**
 
-> The childcare_costs data set contains information on the weekly costs of childcare across the counties of the U.S. and it contains age groups, program types, and years. It also looks to contain the provider counts, the county codes, and the states. The country data set contains a reference of the county code and names. 
+> The childcare_costs data set contains information on the weekly costs of childcare across the counties of the U.S. and it contains age groups, program types, years, and the county codes. The country data set contains a reference of the county codes and what area they represent.  
 
 ## California Childcare Costs
 
 Let's start by focusing only on California.
 
-**2. Create a `ca_childcare` dataset of childcare costs in California, containing (1) county information and (2) just the year and childcare cost variable information from the `childcare_costs` dataset.** 
+**2. Create a `ca_childcare` data set of childcare costs in California, containing (1) county information and (2) just the year and childcare cost variable information from the `childcare_costs` data set.** 
 
-*Hint: There are 58 counties in CA and 11 years in the dataset. Therefore, your new dataset should have 53 x 11 = 638 observations. The final data set should have study year, median household income expressed in 2018 dollars, all the variables associated with full-time median price charged for Center-based Care, and California county names*
+*Hint: There are 58 counties in CA and 11 years in the data set. Therefore, your new dataset should have 58 x 11 = 638 observations. The final data set should have study year, median household income expressed in 2018 dollars, all the variables associated with full-time median price charged for Center-based Care, and California county names*
 
 ```{r}
 #| label: ca-childcare-costs
-ca_childcare <- ca_childcare &>&
-  
+
+childcare_costs <- childcare_costs %>%
+  mutate(county_fips_code = str_pad(county_fips_code, width = 5, side = "left", pad = "0"))
+
+counties <- counties %>%
+  mutate(county_fips_code = str_pad(county_fips_code, width = 5, side = "left", pad = "0"))
+
+ca_childcare <- childcare_costs %>%
+  left_join(counties, by = "county_fips_code")
+
+ca_childcare %>%
+  filter(state_name == "California") %>%
+  select(county_fips_code, county_name, study_year, mhi_2018, mcsa, mc_infant, mc_toddler, mc_preschool)
 ```
+
 
 **3. Using a function from the `forcats` package, complete the code below to create a new variable where each county is categorized into one of the [10 Census regions](https://census.ca.gov/regions/) in California. Use the Region description (from the plot), not the Region number. An example region has been started for you.**  
 
@@ -47,9 +62,20 @@ ca_childcare <- ca_childcare &>&
 
 ca_childcare <- ca_childcare |> 
   mutate(county_name = str_remove(county_name, " County")) |> 
-  mutate(region = fct_______(county_name,
-    'Superior California' = c("Butte", "Colusa", "El Dorado". ...),
-     ...
+  mutate(region = fct_collapse(county_name,
+    'Superior California' = c("Butte", "Colusa", "El Dorado", "Glenn", "Lassen", "Modoc", "Nevada", "Placer", "Plumas", "Sacramento", "Shasta",   "Sierra", "Siskiyou", "Sutter", "Tehama", "Yolo", "Yuba"),
+    'North Coast' = c("Del Norte", "Humboldt", "Lake", "Mendocino", "Napa", "Sonoma", "Trinity"),
+    'San Francisco Bay Area' = c("Alameda", "Contra Costa", "Marin", "San Francisco", "San Mateo",
+          "Santa Clara", "Solano"),
+    'Northern San Joaquin Valley' = c("Alpine", "Amador", "Calaveras", "Madera", "Mariposa", "Merced", 
+          "Mono", "San Joaquin", "Stanislaus", "Tuolumne"),
+    'Central Coast' = c("Monterey", "San Benito", "San Luis Obispo", "Santa Barbara", 
+          "Santa Cruz", "Ventura"),
+    'Southern San Joaquin Valley' = c("Fresno", "Inyo", "Kern", "Kings", "Tulare"),
+    'Inland Empire' = c("Riverside", "San Bernardino"),
+    'Los Angeles County' = c("Los Angeles"),
+    'Orange County' = c("Orange"),
+    'San Diego - Imperial' = c("Imperial", "San Diego")
     ))
 ```
 
