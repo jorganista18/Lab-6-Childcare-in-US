@@ -154,7 +154,7 @@ ggplot(Q6_childcare, aes(x = study_year, y = weekly_price, color = region)) +
     legend.position = "right",
     strip.text = element_text(face = "bold"),
     panel.grid.minor = element_blank(),
-    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1) 
   )
   
 ```
